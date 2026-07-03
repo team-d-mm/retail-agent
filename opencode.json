@@ -1,0 +1,31 @@
+{
+  "$schema": "https://opencode.ai/schemas/opencode.json",
+  "version": "0.1",
+  "instructions": [
+    "AGENTS.md"
+  ],
+  "commands": {
+    "Build": {
+      "command": "go build ./...",
+      "description": "Build all packages"
+    },
+    "Test": {
+      "command": "go test ./...",
+      "description": "Run all tests"
+    },
+    "Vet": {
+      "command": "go vet ./...",
+      "description": "Run static analysis"
+    },
+    "Tidy": {
+      "command": "go mod tidy",
+      "description": "Tidy Go module dependencies"
+    },
+    "CI": {
+      "command": "go build ./... && go vet ./... && go test ./...",
+      "description": "Full CI check (build + vet + test)"
+    }
+  },
+  "plugins": [],
+  "permissions": []
+}
