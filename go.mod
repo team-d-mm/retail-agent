@@ -4,6 +4,7 @@ go 1.26.4
 
 require (
 	cloud.google.com/go/bigquery v1.77.0
+	github.com/google/uuid v1.6.0
 	google.golang.org/adk v1.5.0
 	google.golang.org/api v0.279.0
 	google.golang.org/genai v1.57.0
@@ -31,7 +32,6 @@ require (
 	github.com/google/jsonschema-go v0.4.2 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/safehtml v0.1.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.15 // indirect
 	github.com/googleapis/gax-go/v2 v2.22.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
