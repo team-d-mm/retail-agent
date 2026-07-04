@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Retail Agent — Reorder Assistant</title>
+	<link rel="stylesheet" href="/style.css" />
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+	<main>
+		<h1>Reorder Assistant</h1>
+
+		<section id="setup">
+			<h2>Setup</h2>
+			<label>Google AI Studio API key
+				<input id="aiKey" type="password" placeholder="AIza..." />
+			</label>
+			<label>Service account JSON
+				<textarea id="saJson" rows="5" placeholder='{ "type": "service_account", ... }'></textarea>
+			</label>
+			<label>BigQuery dataset URL
+				<input id="datasetUrl" type="text" placeholder="my-project.retail" />
+			</label>
+			<button id="goBtn">See reorder recommendations</button>
+			<p id="status"></p>
+		</section>
+
+		<section id="dashboard" hidden>
+			<h2>Reorder now</h2>
+			<div id="narrative"></div>
+			<table id="reorderTable">
+				<thead><tr><th>Product</th><th>Stock</th><th>Order qty</th><th>Reason</th></tr></thead>
+				<tbody></tbody>
+			</table>
+
+			<h2>Daily sales trend</h2>
+			<canvas id="trendChart" height="120"></canvas>
+
+			<h2>Top selling products</h2>
+			<ol id="topSellers"></ol>
+		</section>
+	</main>
+	<script src="/app.js"></script>
+</body>
+</html>

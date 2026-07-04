@@ -1,0 +1,8 @@
+:root { font-family: system-ui, sans-serif; }
+main { max-width: 820px; margin: 2rem auto; padding: 0 1rem; }
+label { display: block; margin: 0.75rem 0; }
+input, textarea { width: 100%; padding: 0.5rem; box-sizing: border-box; }
+button { padding: 0.6rem 1rem; font-size: 1rem; cursor: pointer; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { border: 1px solid #ddd; padding: 0.4rem 0.6rem; text-align: left; }
+#status { color: #b00; min-height: 1.2rem; }

@@ -3,6 +3,7 @@ package warehouse
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"cloud.google.com/go/bigquery"
@@ -79,6 +80,21 @@ func NewBigQuery(ctx context.Context, credsJSON []byte, datasetURL string) (*BQS
 		return nil, fmt.Errorf("warehouse: bigquery client: %w", err)
 	}
 	return &BQStore{client: client, ref: ref}, nil
+}
+
+// NewBigQueryFromEnv builds a Store using Application Default Credentials and
+// GCLOUD_PROJECT + BIGQUERY_DATASET env vars (used by the ADK launcher CLI).
+func NewBigQueryFromEnv(ctx context.Context) (Store, error) {
+	project := os.Getenv("GCLOUD_PROJECT")
+	dataset := os.Getenv("BIGQUERY_DATASET")
+	if project == "" || dataset == "" {
+		return nil, fmt.Errorf("warehouse: GCLOUD_PROJECT and BIGQUERY_DATASET must be set")
+	}
+	client, err := bigquery.NewClient(ctx, project)
+	if err != nil {
+		return nil, err
+	}
+	return &BQStore{client: client, ref: DatasetRef{Project: project, Dataset: dataset}}, nil
 }
 
 func (b *BQStore) table(name string) string {
