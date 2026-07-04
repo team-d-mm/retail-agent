@@ -3,8 +3,9 @@ package tools_test
 import (
 	"testing"
 
-	"github.com/dannykhant/retail-agent/internal/tools"
 	"google.golang.org/adk/tool"
+
+	"github.com/team-d-mm/retail-agent/internal/tools"
 )
 
 func TestCheckStockIsTool(t *testing.T) {

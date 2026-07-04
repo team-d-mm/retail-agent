@@ -9,7 +9,7 @@ import (
 	"google.golang.org/adk/cmd/launcher"
 	"google.golang.org/adk/cmd/launcher/full"
 
-	"github.com/dannykhant/retail-agent/internal/agent"
+	"github.com/team-d-mm/retail-agent/internal/agent"
 )
 
 func main() {

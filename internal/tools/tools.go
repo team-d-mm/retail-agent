@@ -3,10 +3,11 @@ package tools
 import (
 	"fmt"
 
-	"github.com/dannykhant/retail-agent/internal/models"
 	"google.golang.org/adk/agent"
 	"google.golang.org/adk/tool"
 	"google.golang.org/adk/tool/functiontool"
+
+	"github.com/team-d-mm/retail-agent/internal/models"
 )
 
 type CheckStockInput struct {

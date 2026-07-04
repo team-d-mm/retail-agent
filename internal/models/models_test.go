@@ -3,7 +3,7 @@ package models_test
 import (
 	"testing"
 
-	"github.com/dannykhant/retail-agent/internal/models"
+	"github.com/team-d-mm/retail-agent/internal/models"
 )
 
 func TestProductFields(t *testing.T) {

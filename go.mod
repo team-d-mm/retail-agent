@@ -1,4 +1,4 @@
-module github.com/dannykhant/retail-agent
+module github.com/team-d-mm/retail-agent
 
 go 1.26.4
 

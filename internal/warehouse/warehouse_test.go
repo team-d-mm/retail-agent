@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/dannykhant/retail-agent/internal/warehouse"
+	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
 func TestNewClient(t *testing.T) {

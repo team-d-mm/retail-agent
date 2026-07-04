@@ -12,9 +12,9 @@ import (
 	"google.golang.org/adk/tool/geminitool"
 	"google.golang.org/genai"
 
-	"github.com/dannykhant/retail-agent/internal/agent/demand"
-	"github.com/dannykhant/retail-agent/internal/agent/inventory"
-	"github.com/dannykhant/retail-agent/internal/agent/supplier"
+	"github.com/team-d-mm/retail-agent/internal/agent/demand"
+	"github.com/team-d-mm/retail-agent/internal/agent/inventory"
+	"github.com/team-d-mm/retail-agent/internal/agent/supplier"
 )
 
 func New(ctx context.Context) adk.Agent {

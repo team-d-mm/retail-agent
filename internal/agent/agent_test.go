@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dannykhant/retail-agent/internal/agent"
+	"github.com/team-d-mm/retail-agent/internal/agent"
 )
 
 func TestNew_ReturnsNonNil(t *testing.T) {
