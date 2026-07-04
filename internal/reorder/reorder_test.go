@@ -1,10 +1,12 @@
 package reorder_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/team-d-mm/retail-agent/internal/models"
 	"github.com/team-d-mm/retail-agent/internal/reorder"
+	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
 func TestRecommend(t *testing.T) {
@@ -59,5 +61,29 @@ func TestRecommend(t *testing.T) {
 				t.Errorf("Reason should never be empty")
 			}
 		})
+	}
+}
+
+func TestRecommendAll(t *testing.T) {
+	fs := &warehouse.FakeStore{
+		Products: []models.Product{
+			{ID: "P1", Name: "Milk", SupplierID: "S1", StockLevel: 5, ReorderPt: 20, ShelfLifeDays: 4},
+			{ID: "P2", Name: "Rice", SupplierID: "S1", StockLevel: 100, ReorderPt: 20},
+		},
+		Suppliers: []models.Supplier{{ID: "S1", LeadTimeDays: 3}},
+		SalesByProduct: map[string][]models.Sale{
+			"P1": {{ProductID: "P1", Quantity: 900}},
+			"P2": {{ProductID: "P2", Quantity: 900}},
+		},
+	}
+	recs, err := reorder.RecommendAll(context.Background(), fs)
+	if err != nil {
+		t.Fatalf("RecommendAll error: %v", err)
+	}
+	if len(recs) != 1 {
+		t.Fatalf("want 1 reorder (Milk only), got %d", len(recs))
+	}
+	if recs[0].Product.ID != "P1" || !recs[0].SpoilageRisk {
+		t.Errorf("unexpected recommendation: %+v", recs[0])
 	}
 }

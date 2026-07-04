@@ -1,10 +1,12 @@
 package reorder
 
 import (
+	"context"
 	"fmt"
 	"math"
 
 	"github.com/team-d-mm/retail-agent/internal/models"
+	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
 const safetyBuffer = 1.5
@@ -53,4 +55,37 @@ func Recommend(p models.Product, unitsSold90, leadTimeDays int) models.Recommend
 		rec.Reason = fmt.Sprintf("Sells ~%.1f/day, %d-day lead time; order %d to cover demand plus buffer.", avgDaily, leadTimeDays, qty)
 	}
 	return rec
+}
+
+// RecommendAll returns reorder recommendations for every product that needs one.
+func RecommendAll(ctx context.Context, s warehouse.Store) ([]models.Recommendation, error) {
+	products, err := s.GetProducts(ctx)
+	if err != nil {
+		return nil, err
+	}
+	suppliers, err := s.GetSuppliers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	leadTime := map[string]int{}
+	for _, sup := range suppliers {
+		leadTime[sup.ID] = sup.LeadTimeDays
+	}
+
+	var out []models.Recommendation
+	for _, p := range products {
+		sales, err := s.GetSales(ctx, p.ID)
+		if err != nil {
+			return nil, err
+		}
+		units := 0
+		for _, sale := range sales {
+			units += sale.Quantity
+		}
+		rec := Recommend(p, units, leadTime[p.SupplierID])
+		if rec.ReorderQty > 0 {
+			out = append(out, rec)
+		}
+	}
+	return out, nil
 }
