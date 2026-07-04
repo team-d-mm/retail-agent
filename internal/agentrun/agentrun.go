@@ -19,7 +19,10 @@ const fixedPrompt = "Review current inventory and sales for the shop. List every
 // Run executes the orchestrator agent with the fixed prompt and returns the
 // concatenated text of the agents' final responses.
 func Run(ctx context.Context, apiKey string, store warehouse.Store) (string, error) {
-	root := agent.New(ctx, apiKey, store)
+	root, err := agent.New(ctx, apiKey, store)
+	if err != nil {
+		return "", err
+	}
 	r, err := runner.New(runner.Config{
 		AppName:           "retail_agent",
 		Agent:             root,

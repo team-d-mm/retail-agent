@@ -13,7 +13,10 @@ func TestNewBuilds(t *testing.T) {
 	if os.Getenv("GOOGLE_API_KEY") == "" {
 		t.Skip("GOOGLE_API_KEY not set")
 	}
-	a := agent.New(context.Background(), os.Getenv("GOOGLE_API_KEY"), &warehouse.FakeStore{})
+	a, err := agent.New(context.Background(), os.Getenv("GOOGLE_API_KEY"), &warehouse.FakeStore{})
+	if err != nil {
+		t.Fatalf("agent.New: %v", err)
+	}
 	if a == nil {
 		t.Fatal("agent.New returned nil")
 	}

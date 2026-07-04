@@ -37,9 +37,18 @@ function render(data) {
 	tbody.innerHTML = "";
 	(data.recommendations || []).forEach((r) => {
 		const tr = document.createElement("tr");
-		tr.innerHTML =
-			`<td>${r.Product.Name}</td><td>${r.Product.StockLevel}</td>` +
-			`<td>${r.ReorderQty}${r.SpoilageRisk ? " ⚠️" : ""}</td><td>${r.Reason}</td>`;
+		const tdName = document.createElement("td");
+		tdName.textContent = r.Product.Name;
+		const tdStock = document.createElement("td");
+		tdStock.textContent = r.Product.StockLevel;
+		const tdQty = document.createElement("td");
+		tdQty.textContent = String(r.ReorderQty) + (r.SpoilageRisk ? " ⚠️" : "");
+		const tdReason = document.createElement("td");
+		tdReason.textContent = r.Reason;
+		tr.appendChild(tdName);
+		tr.appendChild(tdStock);
+		tr.appendChild(tdQty);
+		tr.appendChild(tdReason);
 		tbody.appendChild(tr);
 	});
 

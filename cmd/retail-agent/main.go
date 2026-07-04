@@ -29,7 +29,10 @@ func main() {
 	if err != nil {
 		log.Printf("warning: warehouse from env unavailable (%v); agent tools will error until configured", err)
 	}
-	a := agent.New(ctx, os.Getenv("GOOGLE_API_KEY"), store)
+	a, err := agent.New(ctx, os.Getenv("GOOGLE_API_KEY"), store)
+	if err != nil {
+		log.Fatalf("failed to build agent: %v", err)
+	}
 
 	config := &launcher.Config{AgentLoader: adkagent.NewSingleLoader(a)}
 	l := full.NewLauncher()

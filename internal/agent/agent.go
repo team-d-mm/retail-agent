@@ -2,7 +2,7 @@ package agent
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	adk "google.golang.org/adk/agent"
 	"google.golang.org/adk/agent/llmagent"
@@ -17,10 +17,23 @@ import (
 	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
-func New(ctx context.Context, apiKey string, store warehouse.Store) adk.Agent {
+func New(ctx context.Context, apiKey string, store warehouse.Store) (adk.Agent, error) {
 	model, err := gemini.NewModel(ctx, "gemini-2.5-flash", &genai.ClientConfig{APIKey: apiKey})
 	if err != nil {
-		log.Fatalf("Failed to create model: %v", err)
+		return nil, fmt.Errorf("retail agent model: %w", err)
+	}
+
+	inv, err := inventory.New(ctx, apiKey, store)
+	if err != nil {
+		return nil, fmt.Errorf("inventory agent: %w", err)
+	}
+	dem, err := demand.New(ctx, apiKey, store)
+	if err != nil {
+		return nil, fmt.Errorf("demand agent: %w", err)
+	}
+	sup, err := supplier.New(ctx, apiKey, store)
+	if err != nil {
+		return nil, fmt.Errorf("supplier agent: %w", err)
 	}
 
 	a, err := llmagent.New(llmagent.Config{
@@ -28,18 +41,14 @@ func New(ctx context.Context, apiKey string, store warehouse.Store) adk.Agent {
 		Model:       model,
 		Description: "Orchestrator that helps family-run shop owners make product purchasing decisions",
 		Instruction: "You are a retail decision-making assistant. Delegate to sub-agents for inventory analysis, demand forecasting, and supplier scoring to recommend optimal product purchases.",
-		SubAgents: []adk.Agent{
-			inventory.New(ctx, apiKey, store),
-			demand.New(ctx, apiKey, store),
-			supplier.New(ctx, apiKey, store),
-		},
+		SubAgents:   []adk.Agent{inv, dem, sup},
 		Tools: []tool.Tool{
 			geminitool.GoogleSearch{},
 		},
 	})
 	if err != nil {
-		log.Fatalf("Failed to create retail agent: %v", err)
+		return nil, fmt.Errorf("retail agent: %w", err)
 	}
 
-	return a
+	return a, nil
 }

@@ -2,7 +2,7 @@ package supplier
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"google.golang.org/adk/agent"
 	"google.golang.org/adk/agent/llmagent"
@@ -15,10 +15,10 @@ import (
 	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
-func New(ctx context.Context, apiKey string, store warehouse.Store) agent.Agent {
+func New(ctx context.Context, apiKey string, store warehouse.Store) (agent.Agent, error) {
 	model, err := gemini.NewModel(ctx, "gemini-2.5-flash", &genai.ClientConfig{APIKey: apiKey})
 	if err != nil {
-		log.Fatalf("Failed to create supplier agent model: %v", err)
+		return nil, fmt.Errorf("supplier agent model: %w", err)
 	}
 
 	a, err := llmagent.New(llmagent.Config{
@@ -32,8 +32,8 @@ func New(ctx context.Context, apiKey string, store warehouse.Store) agent.Agent 
 		},
 	})
 	if err != nil {
-		log.Fatalf("Failed to create supplier agent: %v", err)
+		return nil, fmt.Errorf("supplier agent: %w", err)
 	}
 
-	return a
+	return a, nil
 }
