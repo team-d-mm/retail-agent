@@ -87,7 +87,7 @@ func TestEval_NoFalseOrders(t *testing.T) {
 	// for reorder. Mentioning Rice's current stock is fine — only ordering
 	// language near "rice" is a failure.
 	lower := strings.ToLower(res.Narrative)
-	orderRice := regexp.MustCompile(`(order|reorder|restock|buy|purchase)[^.\n]*rice|rice[^.\n]*(order|reorder|restock|buy|purchase)`)
+	orderRice := regexp.MustCompile(`(order|restock|buy|purchase)[^.\n]*rice|rice[^.\n]*(order|restock|buy|purchase)`)
 	if orderRice.MatchString(lower) {
 		t.Errorf("narrative appears to recommend ordering Rice, which is above its reorder point\nnarrative:\n%s", res.Narrative)
 	}
