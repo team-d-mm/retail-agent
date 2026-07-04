@@ -27,3 +27,23 @@ func TestRunReturnsText(t *testing.T) {
 		t.Error("expected non-empty narrative")
 	}
 }
+
+func TestRunTraceReturnsNarrativeAndTools(t *testing.T) {
+	if os.Getenv("GOOGLE_API_KEY") == "" {
+		t.Skip("GOOGLE_API_KEY not set")
+	}
+	store := &warehouse.FakeStore{
+		Products:       []models.Product{{ID: "P1", Name: "Milk", SupplierID: "S1", StockLevel: 5, ReorderPt: 20, ShelfLifeDays: 4}},
+		Suppliers:      []models.Supplier{{ID: "S1", Name: "Acme", Reliability: 0.9, LeadTimeDays: 3}},
+		SalesByProduct: map[string][]models.Sale{"P1": {{ProductID: "P1", Quantity: 900}}},
+	}
+	res, err := agentrun.RunTrace(context.Background(), os.Getenv("GOOGLE_API_KEY"), store)
+	if err != nil {
+		t.Fatalf("RunTrace error: %v", err)
+	}
+	if res.Narrative == "" {
+		t.Error("expected non-empty narrative")
+	}
+	// ToolCalls may legitimately be empty on a given run; just assert the field is usable.
+	t.Logf("tool calls: %v", res.ToolCalls)
+}

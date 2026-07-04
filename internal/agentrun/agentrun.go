@@ -16,12 +16,18 @@ import (
 
 const fixedPrompt = "Review current inventory and sales for the shop. List every product that needs reordering now. For each, give the product name, recommended order quantity, and a one-line reason. Call out any item where the order was capped to avoid spoilage."
 
-// Run executes the orchestrator agent with the fixed prompt and returns the
-// concatenated text of the agents' final responses.
-func Run(ctx context.Context, apiKey string, store warehouse.Store) (string, error) {
+// Result holds a run's final narrative text and the tool-call trajectory.
+type Result struct {
+	Narrative string
+	ToolCalls []string
+}
+
+// RunTrace executes the orchestrator with the fixed prompt and returns both the
+// concatenated final-response text and the names of tool calls made along the way.
+func RunTrace(ctx context.Context, apiKey string, store warehouse.Store) (Result, error) {
 	root, err := agent.New(ctx, apiKey, store)
 	if err != nil {
-		return "", err
+		return Result{}, err
 	}
 	r, err := runner.New(runner.Config{
 		AppName:           "retail_agent",
@@ -30,14 +36,22 @@ func Run(ctx context.Context, apiKey string, store warehouse.Store) (string, err
 		AutoCreateSession: true,
 	})
 	if err != nil {
-		return "", err
+		return Result{}, err
 	}
 
 	msg := genai.NewContentFromText(fixedPrompt, genai.RoleUser)
 	var sb strings.Builder
+	var toolCalls []string
 	for ev, err := range r.Run(ctx, "web-user", uuid.NewString(), msg, adk.RunConfig{}) {
 		if err != nil {
-			return "", err
+			return Result{}, err
+		}
+		if ev.LLMResponse.Content != nil {
+			for _, p := range ev.LLMResponse.Content.Parts {
+				if p.FunctionCall != nil {
+					toolCalls = append(toolCalls, p.FunctionCall.Name)
+				}
+			}
 		}
 		if ev.IsFinalResponse() && ev.LLMResponse.Content != nil {
 			for _, p := range ev.LLMResponse.Content.Parts {
@@ -47,5 +61,11 @@ func Run(ctx context.Context, apiKey string, store warehouse.Store) (string, err
 			}
 		}
 	}
-	return sb.String(), nil
+	return Result{Narrative: sb.String(), ToolCalls: toolCalls}, nil
+}
+
+// Run executes the orchestrator and returns the narrative text.
+func Run(ctx context.Context, apiKey string, store warehouse.Store) (string, error) {
+	res, err := RunTrace(ctx, apiKey, store)
+	return res.Narrative, err
 }
