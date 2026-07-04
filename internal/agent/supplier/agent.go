@@ -3,7 +3,6 @@ package supplier
 import (
 	"context"
 	"log"
-	"os"
 
 	"google.golang.org/adk/agent"
 	"google.golang.org/adk/agent/llmagent"
@@ -11,12 +10,13 @@ import (
 	"google.golang.org/adk/tool"
 	"google.golang.org/adk/tool/geminitool"
 	"google.golang.org/genai"
+
+	"github.com/team-d-mm/retail-agent/internal/tools"
+	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
-func New(ctx context.Context) agent.Agent {
-	model, err := gemini.NewModel(ctx, "gemini-2.5-flash", &genai.ClientConfig{
-		APIKey: os.Getenv("GOOGLE_API_KEY"),
-	})
+func New(ctx context.Context, apiKey string, store warehouse.Store) agent.Agent {
+	model, err := gemini.NewModel(ctx, "gemini-2.5-flash", &genai.ClientConfig{APIKey: apiKey})
 	if err != nil {
 		log.Fatalf("Failed to create supplier agent model: %v", err)
 	}
@@ -25,8 +25,9 @@ func New(ctx context.Context) agent.Agent {
 		Name:        "supplier_agent",
 		Model:       model,
 		Description: "Scores suppliers on reliability, pricing, and lead times",
-		Instruction: "You are a supplier scoring assistant. Evaluate suppliers based on cost, reliability, and delivery speed.",
+		Instruction: "You are a supplier scoring assistant. Use pick_supplier to evaluate suppliers based on cost, reliability, and delivery speed.",
 		Tools: []tool.Tool{
+			tools.NewPickSupplier(store),
 			geminitool.GoogleSearch{},
 		},
 	})

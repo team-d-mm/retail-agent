@@ -3,7 +3,6 @@ package agent
 import (
 	"context"
 	"log"
-	"os"
 
 	adk "google.golang.org/adk/agent"
 	"google.golang.org/adk/agent/llmagent"
@@ -15,12 +14,11 @@ import (
 	"github.com/team-d-mm/retail-agent/internal/agent/demand"
 	"github.com/team-d-mm/retail-agent/internal/agent/inventory"
 	"github.com/team-d-mm/retail-agent/internal/agent/supplier"
+	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
-func New(ctx context.Context) adk.Agent {
-	model, err := gemini.NewModel(ctx, "gemini-2.5-flash", &genai.ClientConfig{
-		APIKey: os.Getenv("GOOGLE_API_KEY"),
-	})
+func New(ctx context.Context, apiKey string, store warehouse.Store) adk.Agent {
+	model, err := gemini.NewModel(ctx, "gemini-2.5-flash", &genai.ClientConfig{APIKey: apiKey})
 	if err != nil {
 		log.Fatalf("Failed to create model: %v", err)
 	}
@@ -31,9 +29,9 @@ func New(ctx context.Context) adk.Agent {
 		Description: "Orchestrator that helps family-run shop owners make product purchasing decisions",
 		Instruction: "You are a retail decision-making assistant. Delegate to sub-agents for inventory analysis, demand forecasting, and supplier scoring to recommend optimal product purchases.",
 		SubAgents: []adk.Agent{
-			inventory.New(ctx),
-			demand.New(ctx),
-			supplier.New(ctx),
+			inventory.New(ctx, apiKey, store),
+			demand.New(ctx, apiKey, store),
+			supplier.New(ctx, apiKey, store),
 		},
 		Tools: []tool.Tool{
 			geminitool.GoogleSearch{},

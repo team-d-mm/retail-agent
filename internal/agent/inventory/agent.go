@@ -3,7 +3,6 @@ package inventory
 import (
 	"context"
 	"log"
-	"os"
 
 	"google.golang.org/adk/agent"
 	"google.golang.org/adk/agent/llmagent"
@@ -11,12 +10,13 @@ import (
 	"google.golang.org/adk/tool"
 	"google.golang.org/adk/tool/geminitool"
 	"google.golang.org/genai"
+
+	"github.com/team-d-mm/retail-agent/internal/tools"
+	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
-func New(ctx context.Context) agent.Agent {
-	model, err := gemini.NewModel(ctx, "gemini-2.5-flash", &genai.ClientConfig{
-		APIKey: os.Getenv("GOOGLE_API_KEY"),
-	})
+func New(ctx context.Context, apiKey string, store warehouse.Store) agent.Agent {
+	model, err := gemini.NewModel(ctx, "gemini-2.5-flash", &genai.ClientConfig{APIKey: apiKey})
 	if err != nil {
 		log.Fatalf("Failed to create inventory agent model: %v", err)
 	}
@@ -25,8 +25,9 @@ func New(ctx context.Context) agent.Agent {
 		Name:        "inventory_agent",
 		Model:       model,
 		Description: "Analyzes inventory levels and alerts on low-stock or overstock conditions",
-		Instruction: "You are an inventory analysis assistant. Check stock levels and flag items that need reordering.",
+		Instruction: "You are an inventory analysis assistant. Use check_stock to read stock levels and flag items that need reordering.",
 		Tools: []tool.Tool{
+			tools.NewCheckStock(store),
 			geminitool.GoogleSearch{},
 		},
 	})

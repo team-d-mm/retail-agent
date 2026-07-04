@@ -10,12 +10,13 @@ import (
 	"google.golang.org/adk/cmd/launcher/full"
 
 	"github.com/team-d-mm/retail-agent/internal/agent"
+	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
 func main() {
 	ctx := context.Background()
 
-	a := agent.New(ctx)
+	a := agent.New(ctx, os.Getenv("GOOGLE_API_KEY"), warehouse.New())
 
 	config := &launcher.Config{
 		AgentLoader: adkagent.NewSingleLoader(a),
