@@ -30,3 +30,6 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+# Service-account keys (never commit)
+*-service-account*.json
+saanay-genai-adk-*.json
