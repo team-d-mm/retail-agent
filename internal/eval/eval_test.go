@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -82,9 +83,13 @@ func TestEval_RecommendsCorrectItems(t *testing.T) {
 
 func TestEval_NoFalseOrders(t *testing.T) {
 	res := evalRun(t)
-	// Rice is above its reorder point for this seed; it must not appear as an order.
-	if strings.Contains(strings.ToLower(res.Narrative), "rice") {
-		t.Errorf("narrative mentions Rice, which should not be reordered\nnarrative:\n%s", res.Narrative)
+	// Rice is above its reorder point for this seed; it must not be recommended
+	// for reorder. Mentioning Rice's current stock is fine — only ordering
+	// language near "rice" is a failure.
+	lower := strings.ToLower(res.Narrative)
+	orderRice := regexp.MustCompile(`(order|reorder|restock|buy|purchase)[^.\n]*rice|rice[^.\n]*(order|reorder|restock|buy|purchase)`)
+	if orderRice.MatchString(lower) {
+		t.Errorf("narrative appears to recommend ordering Rice, which is above its reorder point\nnarrative:\n%s", res.Narrative)
 	}
 }
 
@@ -106,11 +111,11 @@ func TestEval_JudgeQuality(t *testing.T) {
 	}
 	var gt strings.Builder
 	for _, r := range recs {
-		cap := ""
+		spoilageCap := ""
 		if r.SpoilageRisk {
-			cap = " (spoilage-capped)"
+			spoilageCap = " (spoilage-capped)"
 		}
-		fmt.Fprintf(&gt, "- %s: order %d units%s\n", r.Product.Name, r.ReorderQty, cap)
+		fmt.Fprintf(&gt, "- %s: order %d units%s\n", r.Product.Name, r.ReorderQty, spoilageCap)
 	}
 	gt.WriteString("- Rice: no order needed (stock above reorder point)\n")
 
