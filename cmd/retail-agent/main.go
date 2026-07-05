@@ -47,11 +47,19 @@ func serveWeb(ctx context.Context) {
 	if port == "" {
 		port = "8080"
 	}
-	api := server.Handler(agentrun.Run)
+	apiKey := os.Getenv("GOOGLE_API_KEY")
+	var defStore warehouse.Store
+	if s, err := warehouse.NewBigQueryFromEnv(ctx); err != nil {
+		log.Printf("server default BigQuery credentials unavailable (%v); web will ask for credentials", err)
+	} else {
+		defStore = s
+	}
+	api := server.Handler(agentrun.Run, server.Defaults{APIKey: apiKey, Store: defStore})
 
 	mux := http.NewServeMux()
 	mux.Handle("/run", api)
 	mux.Handle("/health", api)
+	mux.Handle("/config", api)
 	mux.Handle("/", http.FileServerFS(web.Files))
 
 	log.Printf("serving web app on :%s", port)
