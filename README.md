@@ -1,5 +1,7 @@
 # retail-agent
 
+[![Hackathon](https://img.shields.io/badge/GenAI_Academy-Hackathon-blueviolet?style=for-the-badge)](https://hack2skill.com/event/apac-genaiacademy)
+
 Retail decision-making agent built with Google ADK in Go. Helps family-run shop owners decide **what to reorder and how much** — reading inventory and sales from BigQuery, forecasting demand, and capping orders so perishables sell before they spoil. Hackathon project for Hack2Skill + Google Cloud AI Decision Making Platform.
 
 The product is a one-button web app: press **See reorder recommendations** and get a dashboard — no prompt to type. Credentials come from either the server's environment (Cloud Run "default credentials") or a one-time in-browser setup, and the dashboard has a switchable light/dark theme.
@@ -7,7 +9,7 @@ The product is a one-button web app: press **See reorder recommendations** and g
 ## Stack
 
 - **Language:** Go 1.26
-- **AI:** Google ADK (Agent Development Kit) — orchestrator delegating to inventory, demand, and supplier sub-agents, powered by Gemini (`gemini-2.5-flash`)
+- **AI:** Google ADK (Agent Development Kit) — orchestrator delegating to inventory, demand, and supplier sub-agents, powered by Gemini (`gemini-3.5-flash`)
 - **Data:** BigQuery (`products`, `sales`, `suppliers`)
 - **Web:** Go HTTP server + static single-page dashboard (Chart.js), light/dark theme
 
@@ -41,7 +43,7 @@ flowchart TB
       SRV --> WH["internal/warehouse<br/>Store: BQStore / FakeStore"]
     end
 
-    ORCH -->|generate| GEM["Gemini 2.5 Flash"]
+    ORCH -->|generate| GEM["Gemini 3.5 Flash"]
     WH -->|SQL| BQ[("BigQuery<br/>products · sales · suppliers")]
 ```
 
