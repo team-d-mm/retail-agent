@@ -19,6 +19,7 @@ html[data-theme="dark"] {
 	--border: #334155;
 	--text: #e2e8f0;
 	--muted: #94a3b8;
+	--danger: #f87171;
 	--input-bg: #0b1220;
 	--row-hover: #243044;
 	--shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.45);
