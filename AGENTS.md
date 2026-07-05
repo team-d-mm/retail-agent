@@ -49,7 +49,7 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 - `internal/warehouse/` — `Store` interface, `BQStore` (BigQuery), `FakeStore` (tests), dataset URL parser
 - `internal/agentrun/` — runs the orchestrator programmatically (`Run`, `RunTrace`)
 - `internal/server/` — HTTP handlers (`POST /run`, `GET /health`)
-- `internal/eval/` — agent-response evaluation: LLM-as-judge (`Judge`) + eval test cases
+- `internal/eval/` — agent-response evaluation (deterministic test cases; no LLM-as-judge)
 - `internal/models/` — shared domain types
 - `web/` — setup + dashboard frontend (`index.html`, `app.js`, `style.css`)
 - `scripts/seed.sql` — demo BigQuery data
@@ -69,7 +69,7 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 - Sub-agents are wired via `llmagent.Config.SubAgents` field
 - `agent.New` and the sub-agent `New` funcs return `(Agent, error)` — construction errors propagate (no `log.Fatalf` on the request path)
 - The `serve-web` server needs no credentials at startup; `POST /run` takes them per request. The BigQuery `Store` is built per request from the request's service-account JSON + dataset URL
-- Agent-response evals live in `internal/eval/`; they run the orchestrator against a seeded `FakeStore` and check the narrative against the deterministic `reorder.RecommendAll` ground truth (keyword/set assertions + an LLM-as-judge case ≥ 0.7)
+- Agent-response evals live in `internal/eval/`; they run the orchestrator against a seeded `FakeStore` and check the narrative against the deterministic `reorder.RecommendAll` ground truth (keyword/set assertions).
 - `serve-web` reports `server_credentials: true` via `GET /config` when `GOOGLE_API_KEY` + ADC BigQuery (`GCLOUD_PROJECT`/`BIGQUERY_DATASET`) are present; the web then skips the setup form. `web/` assets are embedded via `go:embed` (`web/web.go`).
 - **Secrets:** real keys go in `.env` (git-ignored); `.env.example` holds placeholders only. Service-account `*.json` keys are git-ignored — never commit them
 

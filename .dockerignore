@@ -1,0 +1,8 @@
+.git
+.env
+*.json
+!go.sum
+.idea
+docs
+.superpowers
+*.pptx
