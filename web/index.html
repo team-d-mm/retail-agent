@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Retail Agent — Reorder Assistant</title>
+	<link rel="stylesheet" href="/style.css" />
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
+	<script src="/app.js" defer></script>
+</head>
+<body>
+	<header class="topbar">
+		<div class="brand">
+			<span class="brand-mark">🛒</span>
+			<span class="brand-name">Retail Agent</span>
+		</div>
+		<button id="resetBtn" class="btn btn-ghost" hidden>Reset credentials</button>
+	</header>
+
+	<main class="container">
+		<!-- SETUP VIEW -->
+		<section id="setupView" class="view">
+			<div class="card setup-card">
+				<h1 class="card-title">Welcome — one-time setup</h1>
+				<p class="muted">Enter your credentials once. They are stored only in this browser and are sent only to your own Google services.</p>
+
+				<label class="field">
+					<span class="field-label">Google AI Studio API key</span>
+					<input id="aiKey" class="input" type="password" autocomplete="off" placeholder="AIza…" />
+					<span class="field-hint">Get one at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">aistudio.google.com</a></span>
+				</label>
+
+				<label class="field">
+					<span class="field-label">Service account JSON</span>
+					<textarea id="saJson" class="input" rows="6" autocomplete="off" placeholder='{ "type": "service_account", … }'></textarea>
+				</label>
+
+				<label class="field">
+					<span class="field-label">BigQuery dataset URL</span>
+					<input id="datasetUrl" class="input" type="text" placeholder="my-project.retail" />
+				</label>
+
+				<button id="saveBtn" class="btn btn-primary btn-block">Save &amp; continue</button>
+				<p id="setupStatus" class="status status-error"></p>
+			</div>
+		</section>
+
+		<!-- DASHBOARD VIEW -->
+		<section id="dashboardView" class="view" hidden>
+			<div class="dashboard-head">
+				<div>
+					<h1 class="page-title">Reorder recommendations</h1>
+					<p class="muted">One click reads your inventory and sales, then tells you what to buy.</p>
+				</div>
+				<button id="runBtn" class="btn btn-primary">See reorder recommendations</button>
+			</div>
+			<p id="runStatus" class="status"></p>
+
+			<div id="results" hidden>
+				<section class="card">
+					<div class="card-head">
+						<h2 class="card-title">Reorder now</h2>
+						<button id="csvBtn" class="btn btn-secondary" disabled>Download CSV</button>
+					</div>
+					<p id="narrative" class="narrative muted"></p>
+					<div class="table-wrap">
+						<table class="data-table">
+							<thead><tr><th>Product</th><th>Current stock</th><th>Order qty</th><th>Reason</th></tr></thead>
+							<tbody id="reorderBody"></tbody>
+						</table>
+					</div>
+				</section>
+
+				<section class="card">
+					<h2 class="card-title">Daily sales trend</h2>
+					<canvas id="trendChart" height="120"></canvas>
+				</section>
+
+				<section class="card">
+					<h2 class="card-title">Top selling products</h2>
+					<ol id="topSellers" class="top-list"></ol>
+				</section>
+			</div>
+		</section>
+	</main>
+</body>
+</html>

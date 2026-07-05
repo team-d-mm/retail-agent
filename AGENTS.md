@@ -22,7 +22,9 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 | Action | Command |
 |--------|---------|
 | Run CLI agent | `source .env && go run ./cmd/retail-agent` |
-| Run Web UI | `source .env && go run ./cmd/retail-agent web api webui` |
+| Run Web UI (ADK launcher) | `source .env && go run ./cmd/retail-agent web api webui` |
+| Run Web App (button UI) | `go run ./cmd/retail-agent serve-web` then open http://localhost:8080 |
+| Seed demo BigQuery data | `bq query --use_legacy_sql=false < scripts/seed.sql` |
 | Build all | `go build ./...` |
 | Test all | `go test ./...` |
 | Run vet (lint) | `go vet ./...` |

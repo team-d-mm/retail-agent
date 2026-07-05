@@ -5,38 +5,22 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dannykhant/retail-agent/internal/agent"
+	"github.com/team-d-mm/retail-agent/internal/agent"
+	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
-func TestNew_ReturnsNonNil(t *testing.T) {
+func TestNewBuilds(t *testing.T) {
 	if os.Getenv("GOOGLE_API_KEY") == "" {
 		t.Skip("GOOGLE_API_KEY not set")
 	}
-	ctx := context.Background()
-	a := agent.New(ctx)
+	a, err := agent.New(context.Background(), os.Getenv("GOOGLE_API_KEY"), &warehouse.FakeStore{})
+	if err != nil {
+		t.Fatalf("agent.New: %v", err)
+	}
 	if a == nil {
-		t.Fatal("expected non-nil agent")
+		t.Fatal("agent.New returned nil")
 	}
-}
-
-func TestNew_AgentName(t *testing.T) {
-	if os.Getenv("GOOGLE_API_KEY") == "" {
-		t.Skip("GOOGLE_API_KEY not set")
-	}
-	ctx := context.Background()
-	a := agent.New(ctx)
 	if a.Name() != "retail_agent" {
-		t.Errorf("expected name retail_agent, got %s", a.Name())
-	}
-}
-
-func TestNew_HasSubAgents(t *testing.T) {
-	if os.Getenv("GOOGLE_API_KEY") == "" {
-		t.Skip("GOOGLE_API_KEY not set")
-	}
-	ctx := context.Background()
-	a := agent.New(ctx)
-	if len(a.SubAgents()) != 3 {
-		t.Errorf("expected 3 sub-agents, got %d", len(a.SubAgents()))
+		t.Errorf("name = %q, want retail_agent", a.Name())
 	}
 }
