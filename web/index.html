@@ -3,6 +3,13 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<script>
+		try {
+			if (localStorage.getItem("retailAgentTheme") === "dark") {
+				document.documentElement.dataset.theme = "dark";
+			}
+		} catch (e) {}
+	</script>
 	<title>Retail Agent — Reorder Assistant</title>
 	<link rel="stylesheet" href="/style.css" />
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
@@ -15,6 +22,7 @@
 			<span class="brand-name">Retail Agent</span>
 		</div>
 		<div class="topbar-actions">
+			<button id="themeBtn" class="btn btn-ghost" aria-label="Toggle theme">🌙</button>
 			<span id="credMode" class="muted"></span>
 			<button id="useOwnBtn" class="btn btn-ghost" hidden>Use my own credentials</button>
 			<button id="resetBtn" class="btn btn-ghost" hidden>Reset credentials</button>
