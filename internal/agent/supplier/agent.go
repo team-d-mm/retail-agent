@@ -11,6 +11,7 @@ import (
 	"google.golang.org/adk/tool/geminitool"
 	"google.golang.org/genai"
 
+	"github.com/team-d-mm/retail-agent/internal/instructions"
 	"github.com/team-d-mm/retail-agent/internal/tools"
 	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
@@ -25,7 +26,7 @@ func New(ctx context.Context, apiKey string, store warehouse.Store) (agent.Agent
 		Name:        "supplier_agent",
 		Model:       model,
 		Description: "Scores suppliers on reliability, pricing, and lead times",
-		Instruction: "You are a supplier scoring assistant. Use pick_supplier to evaluate suppliers based on cost, reliability, and delivery speed.",
+		Instruction: instructions.SupplierAgent,
 		Tools: []tool.Tool{
 			tools.NewPickSupplier(store),
 			geminitool.GoogleSearch{},

@@ -19,6 +19,8 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 - `internal/server/` exposes `POST /run` (button → agents + reads) and `GET /health`; `internal/agentrun/` runs the orchestrator programmatically (`Run` returns the narrative, `RunTrace` also returns the tool-call trajectory)
 - The product is a one-button web app (`web/`): the owner stores 3 credentials once in browser `localStorage`, presses a button, gets a dashboard. Credentials are sent per request and never persisted server-side
 - Shared types in `internal/models/`
+- Agent instructions live in `internal/instructions/` as separate markdown files per agent, embedded at compile time via `go:embed`
+- Evaluation/judge framework in `internal/eval/`
 
 ## Commands
 
@@ -44,6 +46,7 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 - `internal/agent/inventory/` — inventory analysis sub-agent (`check_stock`)
 - `internal/agent/demand/` — demand forecasting sub-agent (`get_product_insights`)
 - `internal/agent/supplier/` — supplier scoring sub-agent (`pick_supplier`)
+- `internal/instructions/` — per-agent instruction markdown files, embedded via `go:embed`
 - `internal/tools/` — custom function tools (store-bound constructors)
 - `internal/reorder/` — pure, tested expiry-aware reorder math (`Recommend`, `RecommendAll`)
 - `internal/warehouse/` — `Store` interface, `BQStore` (BigQuery), `FakeStore` (tests), dataset URL parser
@@ -61,6 +64,7 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 
 1. Get a Gemini API key at https://aistudio.google.com/app/apikey
 2. Copy `.env.example` to `.env` and add your key: `export GOOGLE_API_KEY="..."`
+3. (For BigQuery) set `GCLOUD_PROJECT` and `BIGQUERY_DATASET`, authenticate via ADC or service account
 
 ## Notes for agents
 
@@ -68,6 +72,7 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 - `functiontool.New` is the ADK API for wrapping Go functions as tools
 - Sub-agents are wired via `llmagent.Config.SubAgents` field
 - `agent.New` and the sub-agent `New` funcs return `(Agent, error)` — construction errors propagate (no `log.Fatalf` on the request path)
+- Agent instructions live in `internal/instructions/*.md` (embedded via `//go:embed` in `internal/instructions/instructions.go`) — tune prompts by editing the markdown, not the Go code
 - The `serve-web` server needs no credentials at startup; `POST /run` takes them per request. The BigQuery `Store` is built per request from the request's service-account JSON + dataset URL
 - Agent-response evals live in `internal/eval/`; they run the orchestrator against a seeded `FakeStore` and check the narrative against the deterministic `reorder.RecommendAll` ground truth (keyword/set assertions).
 - `serve-web` reports `server_credentials: true` via `GET /config` when `GOOGLE_API_KEY` + ADC BigQuery (`GCLOUD_PROJECT`/`BIGQUERY_DATASET`) are present; the web then skips the setup form. `web/` assets are embedded via `go:embed` (`web/web.go`).

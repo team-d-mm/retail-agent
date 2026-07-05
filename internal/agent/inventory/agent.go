@@ -11,6 +11,7 @@ import (
 	"google.golang.org/adk/tool/geminitool"
 	"google.golang.org/genai"
 
+	"github.com/team-d-mm/retail-agent/internal/instructions"
 	"github.com/team-d-mm/retail-agent/internal/tools"
 	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
@@ -25,7 +26,7 @@ func New(ctx context.Context, apiKey string, store warehouse.Store) (agent.Agent
 		Name:        "inventory_agent",
 		Model:       model,
 		Description: "Analyzes inventory levels and alerts on low-stock or overstock conditions",
-		Instruction: "You are an inventory analysis assistant. Use check_stock to read stock levels and flag items that need reordering.",
+		Instruction: instructions.InventoryAgent,
 		Tools: []tool.Tool{
 			tools.NewCheckStock(store),
 			geminitool.GoogleSearch{},
