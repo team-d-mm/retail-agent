@@ -14,6 +14,7 @@ import (
 	"github.com/team-d-mm/retail-agent/internal/agentrun"
 	"github.com/team-d-mm/retail-agent/internal/server"
 	"github.com/team-d-mm/retail-agent/internal/warehouse"
+	"github.com/team-d-mm/retail-agent/web"
 )
 
 func main() {
@@ -51,7 +52,7 @@ func serveWeb(ctx context.Context) {
 	mux := http.NewServeMux()
 	mux.Handle("/run", api)
 	mux.Handle("/health", api)
-	mux.Handle("/", http.FileServer(http.Dir("web")))
+	mux.Handle("/", http.FileServerFS(web.Files))
 
 	log.Printf("serving web app on :%s", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
