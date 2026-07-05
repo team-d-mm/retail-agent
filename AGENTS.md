@@ -17,10 +17,11 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 - Expiry-aware reorder math is a pure, unit-tested function in `internal/reorder/` (caps orders so perishables sell before spoiling); the deterministic result is the source of truth, the LLM adds a plain-language narrative
 - `internal/warehouse/` is a `Store` interface with a BigQuery impl (`BQStore`) and an in-memory `FakeStore` for tests
 - `internal/server/` exposes `POST /run` (button → agents + reads) and `GET /health`; `internal/agentrun/` runs the orchestrator programmatically (`Run` returns the narrative, `RunTrace` also returns the tool-call trajectory)
-- The product is a one-button web app (`web/`): the owner stores 3 credentials once in browser `localStorage`, presses a button, gets a dashboard. Credentials are sent per request and never persisted server-side
+- The product is a one-button web app (`web/`): press a button, get a dashboard. Credentials come from either the server's environment (Cloud Run "default credentials" — env `GOOGLE_API_KEY` + ADC BigQuery; the web then skips setup) or a one-time browser `localStorage` setup form, with a browser override. Browser-supplied credentials are sent per request and never persisted server-side
+- The dashboard has a switchable light/dark theme (header toggle, remembered in `localStorage`, default light)
 - Shared types in `internal/models/`
 - Agent instructions live in `internal/instructions/` as separate markdown files per agent, embedded at compile time via `go:embed`
-- Evaluation/judge framework in `internal/eval/`
+- Deterministic agent-response evaluation in `internal/eval/` (no LLM-as-judge): runs the orchestrator and checks the narrative against the `reorder.RecommendAll` ground truth
 
 ## Commands
 
