@@ -18,7 +18,7 @@ import (
 )
 
 func New(ctx context.Context, apiKey string, store warehouse.Store) (adk.Agent, error) {
-	model, err := gemini.NewModel(ctx, "gemini-2.5-flash", &genai.ClientConfig{APIKey: apiKey})
+	model, err := gemini.NewModel(ctx, "gemini-3.5-flash", &genai.ClientConfig{APIKey: apiKey})
 	if err != nil {
 		return nil, fmt.Errorf("retail agent model: %w", err)
 	}

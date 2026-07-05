@@ -16,10 +16,10 @@
 coverage.*
 *.coverprofile
 profile.cov
-
+saanay-genai-adk-92a2e2e7d234.json
 # Dependency directories (remove the comment below to include it)
 # vendor/
-
+.env.example
 # Go workspace file
 go.work
 go.work.sum
