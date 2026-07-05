@@ -98,3 +98,28 @@ The CLI path reads credentials from the environment (`GOOGLE_API_KEY`, and Appli
 - `docs/` — specs and plans
 ```
 
+## Deploy to Cloud Run
+
+The container serves the web app with server-side default credentials, so the
+deployed app shows the dashboard with no setup form.
+
+1. Store the Gemini key in Secret Manager:
+   ```bash
+   printf '%s' "$GOOGLE_API_KEY" | gcloud secrets create GOOGLE_API_KEY --data-file=-
+   ```
+2. Deploy (BigQuery is read via the service account's ambient credentials):
+   ```bash
+   gcloud run deploy retail-agent \
+     --source . \
+     --region <REGION> \
+     --service-account retail-agent@<PROJECT>.iam.gserviceaccount.com \
+     --set-env-vars GCLOUD_PROJECT=<PROJECT>,BIGQUERY_DATASET=<PROJECT>.retail \
+     --set-secrets GOOGLE_API_KEY=GOOGLE_API_KEY:latest \
+     --allow-unauthenticated
+   ```
+3. The service account needs **BigQuery Data Viewer** + **BigQuery Job User** on the dataset's project.
+
+Locally, the same defaults apply when `.env` exports `GOOGLE_API_KEY`,
+`GCLOUD_PROJECT`, `BIGQUERY_DATASET`, and `GOOGLE_APPLICATION_CREDENTIALS`
+(a service-account JSON): `source .env && go run ./cmd/retail-agent serve-web`
+then open http://localhost:8080 — the dashboard appears with no setup form.

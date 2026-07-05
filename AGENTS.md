@@ -34,6 +34,8 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 | Run vet (lint) | `go vet ./...` |
 | Tidy deps | `go mod tidy` |
 | Full CI check | `go build ./... && go vet ./... && go test ./...` |
+| Build container | `docker build -t retail-agent .` |
+| Deploy to Cloud Run | `gcloud run deploy retail-agent --source . ...` (see README) |
 
 ## Structure
 
@@ -68,6 +70,7 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 - `agent.New` and the sub-agent `New` funcs return `(Agent, error)` — construction errors propagate (no `log.Fatalf` on the request path)
 - The `serve-web` server needs no credentials at startup; `POST /run` takes them per request. The BigQuery `Store` is built per request from the request's service-account JSON + dataset URL
 - Agent-response evals live in `internal/eval/`; they run the orchestrator against a seeded `FakeStore` and check the narrative against the deterministic `reorder.RecommendAll` ground truth (keyword/set assertions + an LLM-as-judge case ≥ 0.7)
+- `serve-web` reports `server_credentials: true` via `GET /config` when `GOOGLE_API_KEY` + ADC BigQuery (`GCLOUD_PROJECT`/`BIGQUERY_DATASET`) are present; the web then skips the setup form. `web/` assets are embedded via `go:embed` (`web/web.go`).
 - **Secrets:** real keys go in `.env` (git-ignored); `.env.example` holds placeholders only. Service-account `*.json` keys are git-ignored — never commit them
 
 ---
