@@ -6,6 +6,8 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 
 The product is a one-button web app: press **See reorder recommendations** and get a dashboard — no prompt to type. Credentials come from either the server's environment (Cloud Run "default credentials") or a one-time in-browser setup, and the dashboard has a switchable light/dark theme.
 
+![retail-agent](.github/img/img.png)
+
 ## Stack
 
 - **Language:** Go 1.26
