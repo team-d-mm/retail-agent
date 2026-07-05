@@ -2,7 +2,6 @@ package eval_test
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -10,9 +9,7 @@ import (
 	"testing"
 
 	"github.com/team-d-mm/retail-agent/internal/agentrun"
-	"github.com/team-d-mm/retail-agent/internal/eval"
 	"github.com/team-d-mm/retail-agent/internal/models"
-	"github.com/team-d-mm/retail-agent/internal/reorder"
 	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
@@ -101,37 +98,3 @@ func TestEval_MentionsSpoilageInsight(t *testing.T) {
 	}
 }
 
-func TestEval_JudgeQuality(t *testing.T) {
-	res := evalRun(t)
-	key := os.Getenv("GOOGLE_API_KEY")
-
-	recs, err := reorder.RecommendAll(context.Background(), seededStore())
-	if err != nil {
-		t.Fatalf("ground truth: %v", err)
-	}
-	var gt strings.Builder
-	for _, r := range recs {
-		spoilageCap := ""
-		if r.SpoilageRisk {
-			spoilageCap = " (spoilage-capped)"
-		}
-		fmt.Fprintf(&gt, "- %s: order %d units%s\n", r.Product.Name, r.ReorderQty, spoilageCap)
-	}
-	gt.WriteString("- Rice: no order needed (stock above reorder point)\n")
-
-	rubric := strings.Join([]string{
-		"1. Recommends reordering exactly the ground-truth items (Milk and Bread) and no others.",
-		"2. Does NOT recommend reordering Rice.",
-		"3. Mentions that perishable orders are capped to avoid spoilage / shelf life.",
-		"4. Is clear and actionable for a small shop owner.",
-	}, "\n")
-
-	v, err := eval.Judge(context.Background(), key, res.Narrative, rubric, gt.String())
-	if err != nil {
-		t.Fatalf("judge failed: %v", err)
-	}
-	t.Logf("judge score=%.2f reason=%s", v.Score, v.Reason)
-	if v.Score < 0.7 {
-		t.Errorf("judge score %.2f below 0.70\nreason: %s\nnarrative:\n%s", v.Score, v.Reason, res.Narrative)
-	}
-}

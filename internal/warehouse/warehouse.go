@@ -82,19 +82,33 @@ func NewBigQuery(ctx context.Context, credsJSON []byte, datasetURL string) (*BQS
 	return &BQStore{client: client, ref: ref}, nil
 }
 
-// NewBigQueryFromEnv builds a Store using Application Default Credentials and
-// GCLOUD_PROJECT + BIGQUERY_DATASET env vars (used by the ADK launcher CLI).
-func NewBigQueryFromEnv(ctx context.Context) (Store, error) {
-	project := os.Getenv("GCLOUD_PROJECT")
-	dataset := os.Getenv("BIGQUERY_DATASET")
+// resolveEnvDataset builds a DatasetRef from GCLOUD_PROJECT and BIGQUERY_DATASET.
+// BIGQUERY_DATASET may be a bare dataset name ("retail") or a fully-qualified
+// "project.dataset" ("myproj.retail", as .env.example and the deploy docs use);
+// the qualified form is parsed so the project is not doubled into the dataset name.
+func resolveEnvDataset(project, dataset string) (DatasetRef, error) {
 	if project == "" || dataset == "" {
-		return nil, fmt.Errorf("warehouse: GCLOUD_PROJECT and BIGQUERY_DATASET must be set")
+		return DatasetRef{}, fmt.Errorf("warehouse: GCLOUD_PROJECT and BIGQUERY_DATASET must be set")
 	}
-	client, err := bigquery.NewClient(ctx, project)
+	if strings.ContainsAny(dataset, ".:/") {
+		return ParseDatasetURL(dataset)
+	}
+	return DatasetRef{Project: project, Dataset: dataset}, nil
+}
+
+// NewBigQueryFromEnv builds a Store using Application Default Credentials and
+// GCLOUD_PROJECT + BIGQUERY_DATASET env vars (used by the ADK launcher CLI and
+// the serve-web default-credentials path).
+func NewBigQueryFromEnv(ctx context.Context) (Store, error) {
+	ref, err := resolveEnvDataset(os.Getenv("GCLOUD_PROJECT"), os.Getenv("BIGQUERY_DATASET"))
 	if err != nil {
 		return nil, err
 	}
-	return &BQStore{client: client, ref: DatasetRef{Project: project, Dataset: dataset}}, nil
+	client, err := bigquery.NewClient(ctx, ref.Project)
+	if err != nil {
+		return nil, err
+	}
+	return &BQStore{client: client, ref: ref}, nil
 }
 
 func (b *BQStore) table(name string) string {
