@@ -11,6 +11,7 @@ import (
 	"google.golang.org/adk/tool/geminitool"
 	"google.golang.org/genai"
 
+	"github.com/team-d-mm/retail-agent/internal/instructions"
 	"github.com/team-d-mm/retail-agent/internal/tools"
 	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
@@ -25,7 +26,7 @@ func New(ctx context.Context, apiKey string, store warehouse.Store) (agent.Agent
 		Name:        "demand_agent",
 		Model:       model,
 		Description: "Forecasts product demand based on historical sales and seasonal trends",
-		Instruction: "You are a demand forecasting assistant. Use get_product_insights to analyze sales trends and predict future demand for products.",
+		Instruction: instructions.DemandAgent,
 		Tools: []tool.Tool{
 			tools.NewGetProductInsights(store),
 			geminitool.GoogleSearch{},

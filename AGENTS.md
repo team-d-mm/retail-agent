@@ -16,6 +16,8 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 - Custom function tools in `internal/tools/`
 - Data warehouse abstraction in `internal/warehouse/`
 - Shared types in `internal/models/`
+- Agent instructions live in `internal/instructions/` as separate markdown files per agent, embedded at compile time via `go:embed`
+- Evaluation/judge framework in `internal/eval/`
 
 ## Commands
 
@@ -38,22 +40,32 @@ Retail decision-making agent built with Google ADK in Go. Helps family-run shop 
 - `internal/agent/inventory/` — inventory analysis sub-agent
 - `internal/agent/demand/` — demand forecasting sub-agent
 - `internal/agent/supplier/` — supplier scoring sub-agent
+- `internal/instructions/` — per-agent instruction markdown files, embedded via `go:embed`
 - `internal/tools/` — custom function tools
-- `internal/warehouse/` — data warehouse abstraction layer
+- `internal/warehouse/` — data warehouse abstraction layer (BigQuery `BQStore` + in-memory `FakeStore`)
 - `internal/models/` — shared domain types
+- `internal/reorder/` — reorder recommendation engine
+- `internal/agentrun/` — runs orchestrator with fixed prompt, returns narrative + tool calls
+- `internal/server/` — HTTP handler (POST /run, GET /health)
+- `internal/eval/` — LLM-as-judge evaluation framework for agent responses
+- `scripts/seed.sql` — BigQuery seed data (6 grocery products, 3 suppliers, 90 days of sales)
+- `web/` — dashboard frontend (HTML + JS + CSS)
 - `.github/workflows/ci.yml` — CI (build + vet + test)
-- `go.mod` / `go.sum` — Go module (module path: `github.com/dannykhant/retail-agent`)
+- `go.mod` / `go.sum` — Go module (module path: `github.com/team-d-mm/retail-agent`)
 
 ## Setup
 
 1. Get a Gemini API key at https://aistudio.google.com/app/apikey
 2. Copy `.env.example` to `.env` and add your key: `export GOOGLE_API_KEY="..."`
+3. (For BigQuery) set `GCLOUD_PROJECT` and `BIGQUERY_DATASET`, authenticate via ADC or service account
 
 ## Notes for agents
 
 - Tests that call `agent.New` require `GOOGLE_API_KEY` set; they skip when absent
 - `functiontool.New` is the ADK API for wrapping Go functions as tools
 - Sub-agents are wired via `llmagent.Config.SubAgents` field
+- Agent instructions are in `internal/instructions/*.md` — edit the markdown, not the Go code
+- `internal/instructions/instructions.go` embeds all instruction files via `//go:embed`
 
 ---
 

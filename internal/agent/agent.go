@@ -14,6 +14,7 @@ import (
 	"github.com/team-d-mm/retail-agent/internal/agent/demand"
 	"github.com/team-d-mm/retail-agent/internal/agent/inventory"
 	"github.com/team-d-mm/retail-agent/internal/agent/supplier"
+	"github.com/team-d-mm/retail-agent/internal/instructions"
 	"github.com/team-d-mm/retail-agent/internal/warehouse"
 )
 
@@ -40,7 +41,7 @@ func New(ctx context.Context, apiKey string, store warehouse.Store) (adk.Agent, 
 		Name:        "retail_agent",
 		Model:       model,
 		Description: "Orchestrator that helps family-run shop owners make product purchasing decisions",
-		Instruction: "You are a retail decision-making assistant. Delegate to sub-agents for inventory analysis, demand forecasting, and supplier scoring to recommend optimal product purchases.",
+		Instruction: instructions.RetailAgent,
 		SubAgents:   []adk.Agent{inv, dem, sup},
 		Tools: []tool.Tool{
 			geminitool.GoogleSearch{},
