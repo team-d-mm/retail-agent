@@ -3,6 +3,7 @@ const $ = (id) => document.getElementById(id);
 let trendChart = null;
 let lastRecommendations = [];
 let serverMode = false; // server has default credentials
+let lastTrend = null; // {labels, values} for re-drawing the chart on theme change
 
 // ---- credential storage (browser-only) ----
 function loadCreds() {
@@ -35,6 +36,33 @@ function setHeader(mode) {
 		$("useOwnBtn").hidden = true;
 		$("resetBtn").hidden = true;
 	}
+}
+
+// ---- theme ----
+function currentTheme() {
+	try {
+		return localStorage.getItem("retailAgentTheme") === "dark" ? "dark" : "light";
+	} catch {
+		return "light";
+	}
+}
+function applyTheme(theme) {
+	if (theme === "dark") {
+		document.documentElement.dataset.theme = "dark";
+	} else {
+		delete document.documentElement.dataset.theme;
+	}
+	try {
+		localStorage.setItem("retailAgentTheme", theme);
+	} catch {}
+	$("themeBtn").textContent = theme === "dark" ? "☀️" : "🌙";
+}
+function toggleTheme() {
+	applyTheme(currentTheme() === "dark" ? "light" : "dark");
+	drawChart(); // re-render with theme colors if a chart is shown
+}
+function themeColor(varName) {
+	return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
 }
 
 // ---- view toggle ----
@@ -74,6 +102,34 @@ async function initView() {
 	}
 }
 
+function drawChart() {
+	if (!lastTrend) return;
+	const tick = themeColor("--muted");
+	const grid = themeColor("--border");
+	if (trendChart) trendChart.destroy();
+	trendChart = new Chart($("trendChart"), {
+		type: "line",
+		data: {
+			labels: lastTrend.labels,
+			datasets: [{
+				label: "Units sold",
+				data: lastTrend.values,
+				tension: 0.3,
+				borderColor: "#2563eb",
+				backgroundColor: "rgba(37,99,235,0.1)",
+				fill: true,
+			}],
+		},
+		options: {
+			plugins: { legend: { display: false } },
+			scales: {
+				x: { ticks: { color: tick }, grid: { color: grid } },
+				y: { ticks: { color: tick }, grid: { color: grid } },
+			},
+		},
+	});
+}
+
 // ---- setup ----
 function handleSave() {
 	const creds = {
@@ -108,6 +164,7 @@ function handleUseOwn() {
 function handleReset() {
 	clearCreds();
 	lastRecommendations = [];
+	lastTrend = null;
 	$("results").hidden = true;
 	$("runStatus").textContent = "";
 	$("runStatus").className = "status";
@@ -179,24 +236,11 @@ function renderDashboard(data) {
 	});
 	$("csvBtn").disabled = lastRecommendations.length === 0;
 
-	const labels = (data.sales_trend || []).map((d) => d.Date);
-	const values = (data.sales_trend || []).map((d) => d.Quantity);
-	if (trendChart) trendChart.destroy();
-	trendChart = new Chart($("trendChart"), {
-		type: "line",
-		data: {
-			labels,
-			datasets: [{
-				label: "Units sold",
-				data: values,
-				tension: 0.3,
-				borderColor: "#2563eb",
-				backgroundColor: "rgba(37,99,235,0.1)",
-				fill: true,
-			}],
-		},
-		options: { plugins: { legend: { display: false } } },
-	});
+	lastTrend = {
+		labels: (data.sales_trend || []).map((d) => d.Date),
+		values: (data.sales_trend || []).map((d) => d.Quantity),
+	};
+	drawChart();
 
 	const list = $("topSellers");
 	list.textContent = "";
@@ -248,9 +292,11 @@ function handleDownloadCSV() {
 }
 
 // ---- wire up (scripts are deferred, so the DOM is ready here) ----
+$("themeBtn").addEventListener("click", toggleTheme);
 $("saveBtn").addEventListener("click", handleSave);
 $("useOwnBtn").addEventListener("click", handleUseOwn);
 $("resetBtn").addEventListener("click", handleReset);
 $("runBtn").addEventListener("click", handleRun);
 $("csvBtn").addEventListener("click", handleDownloadCSV);
+applyTheme(currentTheme()); // sync button label; head script already set the attribute
 initView();
