@@ -146,3 +146,5 @@ textarea.input {
 	.dashboard-head { flex-direction: column; }
 	.dashboard-head .btn { width: 100%; }
 }
+
+.topbar-actions { display: flex; align-items: center; gap: 0.75rem; }

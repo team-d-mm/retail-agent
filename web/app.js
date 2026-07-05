@@ -2,8 +2,9 @@ const STORAGE_KEY = "retailAgentCreds";
 const $ = (id) => document.getElementById(id);
 let trendChart = null;
 let lastRecommendations = [];
+let serverMode = false; // server has default credentials
 
-// ---- credential storage (browser-only; never persisted server-side) ----
+// ---- credential storage (browser-only) ----
 function loadCreds() {
 	try {
 		return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
@@ -18,20 +19,59 @@ function clearCreds() {
 	localStorage.removeItem(STORAGE_KEY);
 }
 
+// ---- header state ----
+function setHeader(mode) {
+	// mode: "browser" | "server" | "setup"
+	if (mode === "browser") {
+		$("credMode").textContent = "";
+		$("useOwnBtn").hidden = true;
+		$("resetBtn").hidden = false;
+	} else if (mode === "server") {
+		$("credMode").textContent = "Using server credentials";
+		$("useOwnBtn").hidden = false;
+		$("resetBtn").hidden = true;
+	} else {
+		$("credMode").textContent = "";
+		$("useOwnBtn").hidden = true;
+		$("resetBtn").hidden = true;
+	}
+}
+
 // ---- view toggle ----
 function showSetup() {
 	$("setupView").hidden = false;
 	$("dashboardView").hidden = true;
-	$("resetBtn").hidden = true;
+	setHeader("setup");
 }
-function showDashboard() {
+function showDashboard(mode) {
 	$("setupView").hidden = true;
 	$("dashboardView").hidden = false;
-	$("resetBtn").hidden = false;
+	setHeader(mode);
 }
-function initView() {
-	if (loadCreds()) showDashboard();
-	else showSetup();
+
+async function serverHasCreds() {
+	try {
+		const res = await fetch("/config");
+		if (!res.ok) return false;
+		const cfg = await res.json();
+		return !!cfg.server_credentials;
+	} catch {
+		return false;
+	}
+}
+
+async function initView() {
+	if (loadCreds()) {
+		serverMode = await serverHasCreds();
+		showDashboard("browser");
+		return;
+	}
+	serverMode = await serverHasCreds();
+	if (serverMode) {
+		showDashboard("server");
+	} else {
+		showSetup();
+	}
 }
 
 // ---- setup ----
@@ -52,12 +92,16 @@ function handleSave() {
 		return;
 	}
 	saveCreds(creds);
-	// Never leave secrets in the DOM after saving.
 	$("aiKey").value = "";
 	$("saJson").value = "";
 	$("datasetUrl").value = "";
 	$("setupStatus").textContent = "";
-	showDashboard();
+	showDashboard("browser");
+}
+
+// ---- open the setup form on demand (browser override) ----
+function handleUseOwn() {
+	showSetup();
 }
 
 // ---- reset ----
@@ -66,20 +110,27 @@ function handleReset() {
 	lastRecommendations = [];
 	$("results").hidden = true;
 	$("runStatus").textContent = "";
+	$("runStatus").className = "status";
+	$("csvBtn").disabled = true;
 	if (trendChart) {
 		trendChart.destroy();
 		trendChart = null;
 	}
-	showSetup();
+	if (serverMode) {
+		showDashboard("server");
+	} else {
+		showSetup();
+	}
 }
 
 // ---- run ----
 async function handleRun() {
 	const creds = loadCreds();
-	if (!creds) {
+	if (!creds && !serverMode) {
 		showSetup();
 		return;
 	}
+	const body = creds ? creds : {}; // empty body => server uses default creds
 	$("runStatus").className = "status";
 	$("runStatus").textContent = "Agents working…";
 	$("runBtn").disabled = true;
@@ -87,7 +138,7 @@ async function handleRun() {
 		const res = await fetch("/run", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(creds),
+			body: JSON.stringify(body),
 		});
 		if (!res.ok) {
 			const detail = (await res.text()).trim();
@@ -99,7 +150,7 @@ async function handleRun() {
 		$("runStatus").className = "status status-error";
 		$("runStatus").textContent =
 			"Couldn't get recommendations: " + e.message +
-			" — check your credentials (use “Reset credentials” above to re-enter).";
+			" — check your credentials.";
 	} finally {
 		$("runBtn").disabled = false;
 	}
@@ -198,6 +249,7 @@ function handleDownloadCSV() {
 
 // ---- wire up (scripts are deferred, so the DOM is ready here) ----
 $("saveBtn").addEventListener("click", handleSave);
+$("useOwnBtn").addEventListener("click", handleUseOwn);
 $("resetBtn").addEventListener("click", handleReset);
 $("runBtn").addEventListener("click", handleRun);
 $("csvBtn").addEventListener("click", handleDownloadCSV);
